@@ -12,7 +12,7 @@ import {
 } from "./cashier-reader";
 import { identify, type Match } from "./identify";
 import {
-  isEnter, isKeypadDigit, isModifierKey, isTab, keyChar, keyLabel, type KeyStroke, virtualKey, VK,
+  isEnter, isKeypadDigit, isModifierKey, isTab, keyChar, keyLabel, type KeyStroke, usCharacter, virtualKey, VK,
 } from "./keys";
 
 export type Level = "error" | "warn" | "info";
@@ -224,13 +224,6 @@ const capsLock: Rule = ({ burst }) => burst.some((s) => s.capsLock)
     "переворачивают регистр — надёжнее выключить.")
   : null;
 
-const layout: Rule = ({ burst }) => {
-  const cyrillic = burst.find((s) => /^[А-Яа-яЁё]$/.test(s.key));
-  if (!cyrillic) return null;
-  return info(`Раскладка не английская («${cyrillic.key}» вместо «${keyChar(cyrillic) ?? "?"}»). ` +
-    "CashierApp читает клавиши, а не символы, поэтому ему это не мешает.");
-};
-
 const keypad: Rule = ({ burst }) => burst.some(isKeypadDigit) && !numLockOff(burst)
   ? info("Цифры набираются на цифровом блоке (NumPad). CashierApp их принимает, но при выключенном " +
     "NumLock сканер перестанет работать — надёжнее верхний ряд цифр.")
@@ -250,16 +243,19 @@ const RULES: readonly Rule[] = [
   unreadable, groupSeparator, restarted, controlKeys, altCodes, keypadWithoutNumLock,
   suffix, severalScans,
   wrongSymbology, wrongModifier, wrongCode, unknownCode,
-  slowScan, capsLock, layout, keypad, handTyped,
+  slowScan, capsLock, keypad, handTyped,
 ];
 
 const LEVEL_ORDER: Record<Level, number> = { error: 0, warn: 1, info: 2 };
 
-/** Everything the keys spelled, the till's reading where it has one. */
+/**
+ * Everything the keys spelled: the till's reading where it has one, the US character elsewhere —
+ * never the layout's text, so which layout Windows is on changes nothing here.
+ */
 function spelled(burst: readonly KeyStroke[]): string {
   return burst
     .filter((s) => !isModifierKey(s) && !isEnter(s))
-    .map((s) => keyChar(s) ?? (s.key.length === 1 ? s.key : ""))
+    .map((s) => keyChar(s) ?? usCharacter(s) ?? "")
     .join("");
 }
 
@@ -271,9 +267,7 @@ export function analyze(
   const sim = simulate(burst);
   const scan = sim.scans.at(-1) ?? null;
   const reading = spelled(burst);
-  const typed = burst.filter((s) => s.key.length === 1).map((s) => s.key).join("");
-  const match = identify(
-    [scan?.code ?? "", withoutAim(reading), reading, withoutAim(typed), typed], samples, current);
+  const match = identify([scan?.code ?? "", withoutAim(reading), reading], samples, current);
 
   const context: Context = {
     burst, sim, scan, match,

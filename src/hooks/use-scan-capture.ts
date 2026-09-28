@@ -9,7 +9,8 @@ const NAVIGATION = new Set([
   "PageDown", "Escape",
 ]);
 
-const BROWSER_SHORTCUTS = new Set(["r", "p", "+", "-", "=", "0"]);
+/** By physical key, not by letter: on a Russian layout Ctrl+R arrives as «к». */
+const BROWSER_SHORTCUTS = new Set(["KeyR", "KeyP", "Equal", "Minus", "NumpadAdd", "NumpadSubtract", "Digit0"]);
 
 /**
  * Whether the browser may act on a key.
@@ -21,9 +22,8 @@ const BROWSER_SHORTCUTS = new Set(["r", "p", "+", "-", "=", "0"]);
 function letThrough(e: KeyboardEvent, scanUnderWay: boolean): boolean {
   if (/^F\d{1,2}$/.test(e.key)) return true;
   if (scanUnderWay) return false;
-  const key = e.key.toLowerCase();
-  if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && BROWSER_SHORTCUTS.has(key)) return true;
-  if (e.ctrlKey && e.shiftKey && (key === "i" || key === "r")) return true;
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && BROWSER_SHORTCUTS.has(e.code)) return true;
+  if (e.ctrlKey && e.shiftKey && (e.code === "KeyI" || e.code === "KeyR")) return true;
   const onControl = e.target instanceof HTMLElement
     && e.target.matches("button, input, summary, select, a[href], [role=slider], [role=switch]");
   return onControl && NAVIGATION.has(e.key) && !e.ctrlKey && !e.altKey && !e.metaKey;

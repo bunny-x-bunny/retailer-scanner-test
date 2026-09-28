@@ -23,10 +23,10 @@ describe("a scanner set up right", () => {
     expect(check("]I114607001771514\n").verdict).toBe("pass");
   });
 
-  test("a Russian layout passes, with a note", () => {
+  test("a Russian layout passes with nothing to say", () => {
     const a = check("]C0Rt-128-xYz9\n", { layout: "ru" });
     expect(a.verdict).toBe("pass");
-    expect(said(a, "info")).toContain("Раскладка не английская");
+    expect(said(a)).toBe("");
   });
 
   test("digits from the keypad pass, with a note", () => {
@@ -36,6 +36,32 @@ describe("a scanner set up right", () => {
     expect(a.verdict).toBe("pass");
     expect(said(a, "info")).toContain("NumPad");
   });
+});
+
+/**
+ * CashierApp reads a scan off the keys, not the text, so a till left on the Russian layout scans
+ * exactly as one on English. The page has to agree — about the verdict and about every word of the
+ * advice, or a technician on a Russian-layout till is told about «ю» where the barcode has «.».
+ */
+describe("the Windows keyboard layout changes nothing", () => {
+  const same = (keys: string) => {
+    const pick = ({ verdict, sample, scan, issues }: Analysis) => ({ verdict, sample: sample?.id, scan, issues });
+    expect(pick(check(keys, { layout: "ru" }))).toEqual(pick(check(keys)));
+  };
+
+  test.each(SAMPLES.map((s) => [s.id, `${aimOf(s)}${s.data}\n`] as const))("%s", (_, keys) => same(keys));
+
+  test.each([
+    ["no AIM identifier", "4607001771517\n"],
+    ["no Enter", "]E04607001771517"],
+    ["Tab instead of Enter", "]E04607001771517\t"],
+    ["a prefix", "x]E04607001771517\n"],
+    ["a suffix", "]E04607001771517\nab"],
+    ["a character the till cannot read", "]A0RT-39-2026.\n"],
+    ["letters in the wrong case", "]C0RT-128-XYZ9\n"],
+    ["the wrong symbology", "]C04607001771517\n"],
+    ["a configurable form", "]F0A40012345B\n"],
+  ])("%s", (_, keys) => same(keys));
 });
 
 describe("the frame: ]cm, code, Enter", () => {

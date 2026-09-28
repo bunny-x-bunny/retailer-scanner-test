@@ -9,7 +9,7 @@ const sans = Geist({ variable: "--font-sans", subsets: ["latin", "cyrillic"] });
 const mono = Geist_Mono({ variable: "--font-mono", subsets: ["latin", "cyrillic"] });
 
 export const metadata: Metadata = {
-  title: "Проверка сканера",
+  title: { default: "Проверка сканера", template: "%s — Проверка сканера" },
   description: "Проверка сканера штрихкодов на совместимость с CashierApp: AIM-идентификатор, код и Enter.",
 };
 

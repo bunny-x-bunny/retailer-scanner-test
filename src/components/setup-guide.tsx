@@ -1,5 +1,8 @@
+import { BookOpenText } from "lucide-react";
+import Link from "next/link";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 
@@ -60,8 +63,8 @@ const STEPS: { title: string; body: React.ReactNode }[] = [
     title: "Включены нужные символики",
     body: (
       <>
-        EAN/UPC, Code 128, Code 39, ITF, GS1 DataBar, Codabar, QR-код и Data Matrix. DataBar и Codabar у
-        многих сканеров выключены по умолчанию — если код «не читается», начните с этого.
+        EAN/UPC, Code 128, Code 39, ITF, QR-код и Data Matrix — обычно включены с завода. GS1 DataBar,
+        Codabar, PDF417 и Aztec пока не нужны: они в «Дополнительных», их можно не проверять.
       </>
     ),
   },
@@ -85,6 +88,12 @@ export function SetupGuide({ className }: { className?: string }) {
           В коде CashierApp принимает только латинские буквы, цифры и дефис, не короче 4 символов. Коды на этой
           странице подобраны под это правило, так что ошибка здесь — это настройка сканера, а не код.
         </CardDescription>
+        <CardAction>
+          <Link href="/manuals/" className={buttonVariants({ variant: "outline" })}>
+            <BookOpenText />
+            Инструкции по моделям
+          </Link>
+        </CardAction>
       </CardHeader>
       <CardContent>
         <Accordion multiple>

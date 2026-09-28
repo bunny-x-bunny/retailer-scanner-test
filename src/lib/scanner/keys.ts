@@ -129,6 +129,28 @@ export function keyChar(s: KeyStroke): string | null {
   return null;
 }
 
+/** A US keyboard's printable keys other than letters, unshifted and shifted. */
+const US_KEYS: Record<string, readonly [string, string]> = {
+  Backquote: ["`", "~"], Minus: ["-", "_"], Equal: ["=", "+"], BracketLeft: ["[", "{"],
+  BracketRight: ["]", "}"], Backslash: ["\\", "|"], Semicolon: [";", ":"], Quote: ["'", "\""],
+  Comma: [",", "<"], Period: [".", ">"], Slash: ["/", "?"],
+  Digit1: ["1", "!"], Digit2: ["2", "@"], Digit3: ["3", "#"], Digit4: ["4", "$"], Digit5: ["5", "%"],
+  Digit6: ["6", "^"], Digit7: ["7", "&"], Digit8: ["8", "*"], Digit9: ["9", "("], Digit0: ["0", ")"],
+  NumpadDecimal: [".", "."], NumpadDivide: ["/", "/"], NumpadMultiply: ["*", "*"], NumpadAdd: ["+", "+"],
+};
+
+/**
+ * The character a US keyboard prints for this key — what the scanner meant by it, whatever the
+ * layout Windows turned it into. A scanner types a code as US key presses, so this is the character
+ * that was in the barcode: on a Russian layout the «.» key types «ю», and «.» is the useful answer.
+ */
+export function usCharacter(s: KeyStroke): string | null {
+  const letter = /^Key([A-Z])$/.exec(s.code)?.[1];
+  if (letter) return s.shift ? letter : letter.toLowerCase();
+  const pair = US_KEYS[s.code];
+  return pair ? pair[s.shift ? 1 : 0] : null;
+}
+
 const KEY_NAMES: Record<string, string> = {
   Enter: "Enter", Tab: "Tab", " ": "пробел", Escape: "Esc", Backspace: "Backspace",
   ArrowUp: "↑", ArrowDown: "↓", ArrowLeft: "←", ArrowRight: "→", Home: "Home", End: "End",
@@ -136,9 +158,12 @@ const KEY_NAMES: Record<string, string> = {
   Unidentified: "?",
 };
 
-/** A key as a person would name it in a message: «.», «Tab», «Ctrl+J». */
+/**
+ * A key as a person would name it in a message: «.», «Tab», «Ctrl+J». Printable keys are named by
+ * their US character, so a message reads the same whichever layout Windows is on.
+ */
 export function keyLabel(s: KeyStroke): string {
-  const base = KEY_NAMES[s.key] ?? (s.key.length === 1 ? s.key : s.key || s.code || "?");
+  const base = KEY_NAMES[s.key] ?? usCharacter(s) ?? (s.key.length === 1 ? s.key : s.key || s.code || "?");
   if (s.ctrl && !s.alt && base.length === 1) return `Ctrl+${base.toUpperCase()}`;
   if (s.alt && !s.ctrl) return `Alt+${base}`;
   return base;

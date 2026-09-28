@@ -37,10 +37,12 @@ describe("results", () => {
 
   test("the report says what came in for each card", () => {
     const report = buildReport(SAMPLES, results, { date: new Date(0), userAgent: "test" });
-    expect(report).toContain("Итог: верно 1, с замечаниями 1, ошибок 1");
+    const main = SAMPLES.filter((s) => s.group === "main").length;
+    expect(report).toContain(`Итог: верно 1, с замечаниями 1, ошибок 1, не проверено ${main - 3} (из ${main} основных)`);
     expect(report).toContain("✓ EAN-13 (]E0 4607001771517) — пришло ]E0 4607001771517");
     expect(report).toContain("! EAN-8 (]E4 46009333) — пришло ]E0 46009333\n    · Модификатор AIM");
     expect(report).toContain("✕ UPC-A (]E0 036000291452) — не читается");
+    expect(report).toContain("Дополнительные\n○ GS1 DataBar");
     expect(report).toContain("○ Aztec (]z0 RT-AZ-3mN6) — не проверен");
   });
 });

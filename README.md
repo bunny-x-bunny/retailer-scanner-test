@@ -21,7 +21,7 @@ The verdict is CashierApp's own, because `src/lib/scanner/` is a port of the til
 
 | Here | In CashierApp (`src/CashierApp/Infrastructure/Devices/`) |
 |---|---|
-| `keys.ts` → `keyChar` | `ScanKeyMap.cs` — reads **virtual keys**, not layout text, so a Russian layout is fine |
+| `keys.ts` → `keyChar` | `ScanKeyMap.cs` — reads **virtual keys**, not layout text, so a Russian layout is fine (`analyze.test.ts` holds every verdict and message identical on both layouts) |
 | `cashier-reader.ts` → `ScanReader` | `BarcodeScanReader.cs` — `]`, a letter, a digit, then data; 2 s timeout; at least 4 characters |
 | `cashier-reader.ts` → `simulate` | `BarcodeScanHook.cs` — which keys are taken, which reach the focused field |
 
@@ -30,13 +30,28 @@ answer is the till's answer. `test/scanner/cashier-reader.test.ts` mirrors `Barc
 
 `analyze.ts` turns that result into advice, one small rule per problem (no AIM ID, a prefix, Tab
 instead of Enter, CR LF, Alt-codes, NumLock off, case flipped, wrong symbology or modifier, too slow…).
-The samples (`src/lib/samples.ts`) are CashierApp's barcode-type shortlist plus the receipt QR; each
-lists the code, the identifier, and the other forms a scanner may legitimately be configured to send
-(UPC-A as EAN-13, Codabar with start/stop characters), which only warn.
+The samples (`src/lib/samples.ts`) come in two sets. The main set is what a till has to read today:
+CashierApp's barcode-type shortlist without GS1 DataBar and Codabar, plus the receipt QR. Those two,
+PDF417 and Aztec are optional. Each sample lists the code, the identifier, and the other forms a
+scanner may legitimately be configured to send (UPC-A as EAN-13, Codabar with start/stop characters),
+which only warn.
 
 `test/samples.test.ts` renders every card with bwip-js and reads it back with zxing-cpp, which also
 reports the AIM identifier a scanner would send — so the pictures and the expectations are checked
 against each other without a scanner.
+
+## Scanner manuals
+
+`/manuals/` has a short page per scanner model: the codes to scan to pass the main set, and how to
+reset to factory settings and start again. On the Netum models that is AIM ID — the one setting that
+differs from the factory — plus the keyboard layout and the Enter suffix, set explicitly in case
+someone changed them.
+
+The codes are the manufacturer's own images, as published, in `public/manuals/<model>/` under the
+names the manual gives them. The steps live in `src/lib/manuals.ts`, each with the payload its image
+decodes to; `test/manuals.test.ts` decodes every image and checks it against that, so an image cannot
+end up under the wrong step. To add a model: put its images in a new folder, add an entry to
+`MANUALS`, run `bun test`.
 
 ## Development
 

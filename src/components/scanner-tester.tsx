@@ -110,6 +110,7 @@ export function ScannerTester() {
       <div className="min-h-dvh bg-muted/40 print:hidden">
         <AppHeader focused={focused} receiving={receiving} onCopyReport={copyReport} onReset={reset} />
         <main className="grid items-start gap-4 p-4 md:p-6 lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_24rem]">
+          <h1 className="sr-only">Проверка сканера штрихкодов</h1>
           <SampleList
             className="lg:sticky lg:top-6 lg:row-span-2 xl:row-span-1"
             samples={SAMPLES}

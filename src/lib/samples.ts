@@ -1,8 +1,10 @@
 /**
  * The barcodes the page shows, and what a correctly configured scanner must type for each.
  *
- * The main set is CashierApp's own shortlist (`BarcodeType.Offered` in the till) plus the receipt QR
- * a sales slip carries; the extra set is what `ScannedBarcode` can name but no shop here prints.
+ * The main set is what a till has to read today: CashierApp's barcode-type shortlist
+ * (`BarcodeType.Offered`) without GS1 DataBar and Codabar, plus the receipt QR a sales slip carries.
+ * The extra set is optional — those two, and what `ScannedBarcode` can name but no shop here prints.
+ * The main set comes first, so auto-advance finishes it before offering the rest.
  *
  * Every `data` value is something CashierApp can receive: ASCII letters, digits and `-`, at least
  * four characters. The till's scan reader decodes nothing else (`ScanKeyMap`), so a sample outside
@@ -99,7 +101,23 @@ export const SAMPLES: readonly Sample[] = [
     text: "14607001771514", symbology: "I", modifiers: ["0", "1"], data: "14607001771514",
   },
   {
-    id: "databar", name: "GS1 DataBar", group: "main", encoder: "databaromni",
+    id: "qr", name: "QR-код", group: "main", encoder: "qrcode", matrix: true,
+    hint: "Товарный QR: буквы в обоих регистрах, цифры и дефис",
+    text: "RT-QR-7Hq2Lm9x", symbology: "Q", modifiers: ["1"], data: "RT-QR-7Hq2Lm9x",
+  },
+  {
+    id: "receipt", name: "QR чека", group: "main", encoder: "qrcode", matrix: true,
+    hint: "Как на чеке CashierApp: номер чека (UUID). Нужен в «Истории продаж»",
+    text: "cc99375e-6be6-49b7-966f-3997967ebe4c", symbology: "Q", modifiers: ["1"],
+    data: "cc99375e-6be6-49b7-966f-3997967ebe4c", caseInsensitive: true,
+  },
+  {
+    id: "datamatrix", name: "Data Matrix", group: "main", encoder: "datamatrix", matrix: true,
+    hint: "Квадратный код для маркировки",
+    text: "RT-DM-5kP8wQ2", symbology: "d", modifiers: ["1"], data: "RT-DM-5kP8wQ2",
+  },
+  {
+    id: "databar", name: "GS1 DataBar", group: "extra", encoder: "databaromni",
     hint: "Компактный код весового товара. Часто выключен в сканере по умолчанию",
     // A GTIN of its own: converted to EAN-13 it must not read as the EAN-13 card.
     text: "(01)04601234567893", symbology: "e", modifiers: ["0"], data: "0104601234567893",
@@ -116,7 +134,7 @@ export const SAMPLES: readonly Sample[] = [
     ],
   },
   {
-    id: "codabar", name: "Codabar", group: "main", encoder: "rationalizedCodabar",
+    id: "codabar", name: "Codabar", group: "extra", encoder: "rationalizedCodabar",
     hint: "Цифры — на бланках и в аптеках",
     text: "A40012345B", symbology: "F", modifiers: ["0"], data: "40012345",
     alternatives: [
@@ -131,22 +149,6 @@ export const SAMPLES: readonly Sample[] = [
           "в коде товара их нет.",
       },
     ],
-  },
-  {
-    id: "qr", name: "QR-код", group: "main", encoder: "qrcode", matrix: true,
-    hint: "Товарный QR: буквы в обоих регистрах, цифры и дефис",
-    text: "RT-QR-7Hq2Lm9x", symbology: "Q", modifiers: ["1"], data: "RT-QR-7Hq2Lm9x",
-  },
-  {
-    id: "receipt", name: "QR чека", group: "main", encoder: "qrcode", matrix: true,
-    hint: "Как на чеке CashierApp: номер чека (UUID). Нужен в «Истории продаж»",
-    text: "cc99375e-6be6-49b7-966f-3997967ebe4c", symbology: "Q", modifiers: ["1"],
-    data: "cc99375e-6be6-49b7-966f-3997967ebe4c", caseInsensitive: true,
-  },
-  {
-    id: "datamatrix", name: "Data Matrix", group: "main", encoder: "datamatrix", matrix: true,
-    hint: "Квадратный код для маркировки",
-    text: "RT-DM-5kP8wQ2", symbology: "d", modifiers: ["1"], data: "RT-DM-5kP8wQ2",
   },
   {
     id: "pdf417", name: "PDF417", group: "extra", encoder: "pdf417",

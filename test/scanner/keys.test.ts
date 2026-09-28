@@ -41,6 +41,12 @@ describe("keyChar — CashierApp's ScanKeyMap", () => {
 });
 
 describe("keyLabel", () => {
+  test("names a printable key by its US character, whatever the layout typed", () => {
+    expect(keyLabel(stroke({ keyCode: 190, code: "Period", key: "ю" }))).toBe(".");
+    expect(keyLabel(stroke({ keyCode: 88, code: "KeyX", key: "ч" }))).toBe("x");
+    expect(keyLabel(stroke({ keyCode: 191, code: "Slash", key: ",", shift: true }))).toBe("?");
+  });
+
   test("names keys the way a message should", () => {
     expect(keyLabel(stroke({ keyCode: 32, code: "Space", key: " " }))).toBe("пробел");
     expect(keyLabel(stroke({ keyCode: 74, code: "KeyJ", key: "j", ctrl: true }))).toBe("Ctrl+J");

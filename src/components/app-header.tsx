@@ -1,8 +1,9 @@
 "use client";
 
-import { ClipboardCopy, Moon, Printer, RotateCcw, ScanBarcode, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { ClipboardCopy, Printer, RotateCcw } from "lucide-react";
 import { useState } from "react";
+import { SiteHeader } from "@/components/site-header";
+import { useHydrated } from "@/hooks/use-hydrated";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -12,7 +13,10 @@ import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 
 function FocusIndicator({ focused, receiving }: { focused: boolean; receiving: boolean }) {
-  const [label, tone] = !focused ? ["Страница не в фокусе", "bg-destructive/10 text-destructive"]
+  // The prerendered page is not listening yet: say so, or a scan made during loading is lost unexplained.
+  const live = useHydrated();
+  const [label, tone] = !live ? ["Загрузка…", "bg-muted text-muted-foreground"]
+    : !focused ? ["Страница не в фокусе", "bg-destructive/10 text-destructive"]
     : receiving ? ["Идёт скан…", "bg-aim/10 text-aim"]
     : ["Готов к сканированию", "bg-success/10 text-success"];
   return (
@@ -23,21 +27,6 @@ function FocusIndicator({ focused, receiving }: { focused: boolean; receiving: b
       <span className={cn("size-2 rounded-full bg-current", receiving && focused && "animate-pulse")} />
       {label}
     </span>
-  );
-}
-
-function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      aria-label="Сменить тему"
-      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-    >
-      <Sun className="dark:hidden" />
-      <Moon className="hidden dark:block" />
-    </Button>
   );
 }
 
@@ -67,6 +56,7 @@ function ResetButton({ onReset }: { onReset: () => void }) {
   );
 }
 
+/** The site header, with the test page's own status and actions. */
 export function AppHeader({ focused, receiving, onCopyReport, onReset }: {
   focused: boolean;
   receiving: boolean;
@@ -74,35 +64,24 @@ export function AppHeader({ focused, receiving, onCopyReport, onReset }: {
   onReset: () => void;
 }) {
   return (
-    <header className="border-b bg-background print:hidden">
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-3 md:px-6">
-        <div className="flex items-center gap-3">
-          <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <ScanBarcode className="size-5" aria-hidden />
-          </div>
-          <div>
-            <h1 className="text-lg leading-tight font-semibold">Проверка сканера штрихкодов</h1>
-            <p className="text-sm text-muted-foreground">
-              Для CashierApp сканер передаёт AIM-идентификатор{" "}
-              <Kbd className="font-mono text-aim">]cm</Kbd>, код и <Kbd className="text-success">Enter</Kbd>
-              {" "}— и больше ничего.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <FocusIndicator focused={focused} receiving={receiving} />
-          <Button variant="outline" onClick={onCopyReport}>
-            <ClipboardCopy />
-            Скопировать отчёт
-          </Button>
-          <Button variant="outline" onClick={() => window.print()}>
-            <Printer />
-            Печать листа
-          </Button>
-          <ResetButton onReset={onReset} />
-          <ThemeToggle />
-        </div>
-      </div>
-    </header>
+    <SiteHeader
+      subtitle={
+        <>
+          Для CashierApp сканер передаёт AIM-идентификатор <Kbd className="font-mono text-aim">]cm</Kbd>, код
+          и <Kbd className="text-success">Enter</Kbd> — и больше ничего.
+        </>
+      }
+    >
+      <FocusIndicator focused={focused} receiving={receiving} />
+      <Button variant="outline" onClick={onCopyReport}>
+        <ClipboardCopy />
+        Скопировать отчёт
+      </Button>
+      <Button variant="outline" onClick={() => window.print()}>
+        <Printer />
+        Печать листа
+      </Button>
+      <ResetButton onReset={onReset} />
+    </SiteHeader>
   );
 }
