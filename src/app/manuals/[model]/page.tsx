@@ -20,7 +20,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const manual = manualById((await params).model);
-  return { title: manual ? `${manual.name}: настройка` : "Инструкции" };
+  return { title: manual ? `${manual.name}: настройка` : "Инструкции по настройке" };
 }
 
 export default async function ManualPage({ params }: Props) {
@@ -32,7 +32,7 @@ export default async function ManualPage({ params }: Props) {
       <SiteHeader subtitle="Настройка сканеров для CashierApp" />
       <main className="mx-auto max-w-3xl space-y-4 p-4 md:p-6">
         <nav aria-label="Путь" className="flex items-center gap-1 text-sm text-muted-foreground print:hidden">
-          <Link href="/manuals/" className="hover:text-foreground">Инструкции</Link>
+          <Link href="/manuals/" className="hover:text-foreground">Инструкции по настройке</Link>
           <ChevronRight className="size-3.5" aria-hidden />
           <span className="text-foreground">{manual.name}</span>
         </nav>

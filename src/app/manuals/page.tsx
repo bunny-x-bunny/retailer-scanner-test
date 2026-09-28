@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MANUALS } from "@/lib/manuals";
 
-export const metadata: Metadata = { title: "Инструкции" };
+export const metadata: Metadata = { title: "Инструкции по настройке" };
 
 const CODE_FORMS: Record<string, string> = { one: "код", few: "кода", many: "кодов" };
 const codes = (n: number) => `${n} ${CODE_FORMS[new Intl.PluralRules("ru").select(n)] ?? "кода"}`;
@@ -16,7 +16,7 @@ export default function ManualsPage() {
       <SiteHeader subtitle="Настройка сканеров для CashierApp" />
       <main className="mx-auto max-w-3xl space-y-4 p-4 md:p-6">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">Инструкции</h1>
+          <h1 className="text-2xl font-semibold">Инструкции по настройке</h1>
           <p className="text-muted-foreground">
             Выберите модель сканера. Настройка — несколько кодов по порядку; если проверка не проходит — сброс
             к заводским настройкам и заново.

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/", label: "Проверка", icon: ScanLine, active: (path: string) => path === "/" },
-  { href: "/manuals/", label: "Инструкции", icon: BookOpenText, active: (path: string) => path.startsWith("/manuals") },
+  { href: "/manuals/", label: "Инструкции по настройке", icon: BookOpenText, active: (path: string) => path.startsWith("/manuals") },
 ];
 
 function ThemeToggle() {
@@ -27,13 +27,49 @@ function ThemeToggle() {
   );
 }
 
-/** Brand, the two sections, and whatever the page wants beside them. */
-export function SiteHeader({ subtitle, children }: { subtitle: React.ReactNode; children?: React.ReactNode }) {
+/**
+ * The site's sections, as tabs on the header's bottom edge.
+ *
+ * Deliberately nothing like a button: no fill, no outline — an underline under the current one, and
+ * a row of their own. Beside the page's actions they read as another action.
+ */
+function SectionTabs() {
   const path = usePathname();
   return (
+    <nav aria-label="Разделы" className="flex min-w-0 gap-5 overflow-x-auto [scrollbar-width:none] sm:gap-6">
+      {NAV.map(({ href, label, icon: Icon, active }) => {
+        const current = active(path);
+        return (
+          <Link
+            key={href}
+            href={href}
+            aria-current={current ? "page" : undefined}
+            className={cn(
+              // -mb-px lays the underline over the header's own border.
+              "-mb-px inline-flex h-11 shrink-0 items-center gap-2 border-b-2 text-[0.9375rem] font-medium outline-none",
+              "transition-colors focus-visible:text-foreground focus-visible:underline",
+              current
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:border-muted-foreground/40 hover:text-foreground",
+            )}
+          >
+            {/* Dropped on a phone, where the two labels only just fit beside the theme switch. */}
+            <Icon className="hidden size-4 sm:block" aria-hidden />
+            {label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+/** Brand and the page's own actions on top; the sections below, with the theme switch at their end. */
+export function SiteHeader({ subtitle, children }: { subtitle: React.ReactNode; children?: React.ReactNode }) {
+  return (
     <header className="border-b bg-background print:hidden">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 md:px-6">
-        <div className="flex items-center gap-3">
+      {/* On a wide screen the brand gives way — its subtitle wraps — rather than the actions dropping a row. */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-4 pt-3 pb-1 md:px-6 lg:flex-nowrap">
+        <div className="flex min-w-0 items-center gap-3">
           <Link
             href="/"
             aria-label="На главную"
@@ -46,28 +82,11 @@ export function SiteHeader({ subtitle, children }: { subtitle: React.ReactNode; 
             <p className="text-sm text-muted-foreground">{subtitle}</p>
           </div>
         </div>
-        <nav aria-label="Разделы" className="flex items-center gap-1">
-          {NAV.map(({ href, label, icon: Icon, active }) => {
-            const current = active(path);
-            return (
-              <Link
-                key={href}
-                href={href}
-                aria-current={current ? "page" : undefined}
-                className={cn(
-                  "inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium outline-none",
-                  "hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50",
-                  current ? "bg-muted text-foreground" : "text-muted-foreground",
-                )}
-              >
-                <Icon className="size-4" aria-hidden />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="ms-auto flex flex-wrap items-center gap-2">
-          {children}
+        {children && <div className="ms-auto flex shrink-0 flex-wrap items-center gap-2">{children}</div>}
+      </div>
+      <div className="flex items-center gap-4 px-4 md:px-6">
+        <SectionTabs />
+        <div className="ms-auto">
           <ThemeToggle />
         </div>
       </div>

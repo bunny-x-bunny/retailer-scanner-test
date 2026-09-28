@@ -91,7 +91,7 @@ export function SetupGuide({ className }: { className?: string }) {
         <CardAction>
           <Link href="/manuals/" className={buttonVariants({ variant: "outline" })}>
             <BookOpenText />
-            Инструкции по моделям
+            Инструкции по настройке
           </Link>
         </CardAction>
       </CardHeader>
