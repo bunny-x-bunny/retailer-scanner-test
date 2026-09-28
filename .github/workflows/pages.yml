@@ -1,0 +1,55 @@
+# Tests, then publishes the static export to GitHub Pages.
+# One-time setup: Settings → Pages → Build and deployment → Source: «GitHub Actions».
+name: Pages
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun run lint
+      - run: bun test
+      - id: pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+      # A project site lives under /<repo>/; configure-pages says exactly where.
+      - run: bun run build
+        env:
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: out
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
